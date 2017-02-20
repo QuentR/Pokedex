@@ -1,6 +1,7 @@
 package fr.quentinroussat.pokedex.api;
 
 import fr.quentinroussat.pokedex.model.PokemonAnswer;
+import fr.quentinroussat.pokedex.util.Constants;
 import retrofit2.Call;
 import retrofit2.http.GET;
 
@@ -10,6 +11,6 @@ import retrofit2.http.GET;
 
 public interface PokemonService {
 
-    @GET("pokemon")
+    @GET(Constants.API_GET_POKEMON)
     Call<PokemonAnswer> getPokemonList();
 }
