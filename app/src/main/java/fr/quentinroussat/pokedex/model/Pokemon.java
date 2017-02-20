@@ -23,7 +23,20 @@ public class Pokemon {
 
 
     public int getNumber() {
-        return number;
+        String[] urlDivided = dataUrl.split("/");
+        return Integer.parseInt(urlDivided[urlDivided.length - 1]);
+    }
+    public String getFullNumberFromPokemonNumber(int number){
+        if (number < 10)
+        {
+            return "00" + number;
+        }
+
+        if (number >= 10 && number < 100){
+            return "0" + number;
+        }
+
+        return "" + number;
     }
 
     public void setNumber(int number) {

@@ -28,35 +28,32 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private PokemonGridAdapter adapter;
     public static final String TAG = "POKEMON";
+    private int offset = 0;
+    private boolean canLoadData = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        adapter = new PokemonGridAdapter();
-        recyclerView.setAdapter(adapter);
-        recyclerView.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 5);
-        recyclerView.setLayoutManager(gridLayoutManager);
-
+        initRecyclerView();
 
         retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        getPokemonData();
+        getPokemonData(offset);
     }
 
-    private void getPokemonData() {
+    private void getPokemonData(int offset) {
         PokemonService service = retrofit.create(PokemonService.class);
-        Call<PokemonAnswer> pokemonAnswerCall = service.getPokemonList();
+        Call<PokemonAnswer> pokemonAnswerCall = service.getPokemonList(Constants.LOADING_VALUE, offset);
 
         pokemonAnswerCall.enqueue(new Callback<PokemonAnswer>() {
             @Override
             public void onResponse(Call<PokemonAnswer> call, Response<PokemonAnswer> response) {
+                canLoadData = true;
                 if (response.isSuccessful()) {
 
                     PokemonAnswer pokemonAnswer = response.body();
@@ -73,8 +70,36 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<PokemonAnswer> call, Throwable t) {
-
+                canLoadData = true;
                 Toast.makeText(MainActivity.this, "Impossible de récupérer les données", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void initRecyclerView(){
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        adapter = new PokemonGridAdapter(MainActivity.this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
+        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 5);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0 ){
+                    int visibleItemCount = gridLayoutManager.getChildCount();
+                    int totalItemCount = gridLayoutManager.getItemCount();
+                    int pastVisibleItems = gridLayoutManager.findFirstVisibleItemPosition();
+
+                    if (canLoadData){
+                        if (visibleItemCount + pastVisibleItems >= totalItemCount){
+                            canLoadData = false;
+                            offset = offset + Constants.LOADING_VALUE;
+                            getPokemonData(offset);
+                        }
+                    }
+                }
             }
         });
     }
