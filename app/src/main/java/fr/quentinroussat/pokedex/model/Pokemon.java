@@ -26,13 +26,12 @@ public class Pokemon {
         String[] urlDivided = dataUrl.split("/");
         return Integer.parseInt(urlDivided[urlDivided.length - 1]);
     }
-    public String getFullNumberFromPokemonNumber(int number){
-        if (number < 10)
-        {
+
+    public String getFullNumberFromPokemonNumber(int number) {
+        if (number < 10) {
             return "00" + number;
         }
-
-        if (number >= 10 && number < 100){
+        if (number >= 10 && number < 100) {
             return "0" + number;
         }
 

@@ -1,4 +1,4 @@
-package fr.quentinroussat.pokedex.adapter;
+package fr.quentinroussat.pokedex.ui.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -62,6 +62,15 @@ public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.
         }).into(holder.pokemonImage);
     }
 
+    public Pokemon getPokemonFromPosition(int position)
+    {
+        return dataset.get(position);
+    }
+
+
+
+
+
     @Override
     public int getItemCount() {
         return dataset.size();
@@ -83,6 +92,14 @@ public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.
             pokemonImage = (ImageView) itemView.findViewById(R.id.pokemon_image);
             pokemonName = (TextView) itemView.findViewById(R.id.pokemon_name);
             pokemonBackground = (TextView) itemView.findViewById(R.id.pokemon_background);
+        }
+
+        public ImageView getPokemonImage() {
+            return pokemonImage;
+        }
+
+        public TextView getPokemonName() {
+            return pokemonName;
         }
     }
 }

@@ -1,20 +1,28 @@
-package fr.quentinroussat.pokedex.ui;
+package fr.quentinroussat.pokedex.ui.activity;
 
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import fr.quentinroussat.pokedex.R;
-import fr.quentinroussat.pokedex.adapter.PokemonGridAdapter;
-import fr.quentinroussat.pokedex.api.PokemonService;
+import fr.quentinroussat.pokedex.ui.adapter.ItemClickListener;
+import fr.quentinroussat.pokedex.ui.adapter.PokemonGridAdapter;
+import fr.quentinroussat.pokedex.api.ApiService;
 import fr.quentinroussat.pokedex.model.Pokemon;
 import fr.quentinroussat.pokedex.model.PokemonAnswer;
+import fr.quentinroussat.pokedex.ui.adapter.RecyclerTouchListener;
 import fr.quentinroussat.pokedex.util.Constants;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Retrofit retrofit;
     private RecyclerView recyclerView;
+    private CoordinatorLayout coordinatorLayout;
     private PokemonGridAdapter adapter;
     public static final String TAG = "POKEMON";
     private int offset = 0;
@@ -35,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
         initRecyclerView();
 
@@ -47,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getPokemonData(int offset) {
-        PokemonService service = retrofit.create(PokemonService.class);
+        ApiService service = retrofit.create(ApiService.class);
         Call<PokemonAnswer> pokemonAnswerCall = service.getPokemonList(Constants.LOADING_VALUE, offset);
 
         pokemonAnswerCall.enqueue(new Callback<PokemonAnswer>() {
@@ -59,8 +70,7 @@ public class MainActivity extends AppCompatActivity {
                     PokemonAnswer pokemonAnswer = response.body();
                     ArrayList<Pokemon> pokemonList = pokemonAnswer.getResults();
 
-                    if (pokemonList != null)
-                    {
+                    if (pokemonList != null) {
                         adapter.addPokemonToAdapter(pokemonList);
                     }
                 } else {
@@ -71,12 +81,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<PokemonAnswer> call, Throwable t) {
                 canLoadData = true;
-                Toast.makeText(MainActivity.this, "Impossible de récupérer les données", Toast.LENGTH_SHORT).show();
+                Snackbar snackbar = Snackbar
+                        .make(coordinatorLayout, "Impossible de charger les données", Snackbar.LENGTH_LONG);
+
+                snackbar.show();
             }
         });
     }
 
-    private void initRecyclerView(){
+    /**
+     * Initialise la REcyclerView avec les différents paramétrages
+     */
+    private void initRecyclerView() {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         adapter = new PokemonGridAdapter(MainActivity.this);
         recyclerView.setAdapter(adapter);
@@ -87,13 +103,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (dy > 0 ){
+                if (dy > 0) {
                     int visibleItemCount = gridLayoutManager.getChildCount();
                     int totalItemCount = gridLayoutManager.getItemCount();
                     int pastVisibleItems = gridLayoutManager.findFirstVisibleItemPosition();
 
-                    if (canLoadData){
-                        if (visibleItemCount + pastVisibleItems >= totalItemCount){
+                    if (canLoadData) {
+                        if (visibleItemCount + pastVisibleItems >= totalItemCount) {
                             canLoadData = false;
                             offset = offset + Constants.LOADING_VALUE;
                             getPokemonData(offset);
@@ -102,5 +118,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(this, recyclerView, new ItemClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                PokemonGridAdapter.ViewHolder holder = (PokemonGridAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+                Log.d(TAG, "" + holder.getPokemonName().getText());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+            }
+        }));
     }
 }
