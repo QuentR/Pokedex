@@ -19,6 +19,7 @@
         android:textColor="@android:color/white"
         android:typeface="sans"
         android:textSize="20sp"
+        android:visibility="gone"
         android:layout_alignEnd="@+id/pokemon_image" />
 
     <TextView

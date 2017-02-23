@@ -16,7 +16,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
 import fr.quentinroussat.pokedex.R;
+import fr.quentinroussat.pokedex.model.Manager;
 import fr.quentinroussat.pokedex.ui.adapter.ItemClickListener;
 import fr.quentinroussat.pokedex.ui.adapter.PokemonGridAdapter;
 import fr.quentinroussat.pokedex.api.ApiService;
@@ -32,13 +34,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Retrofit retrofit;
-    private RecyclerView recyclerView;
-    private CoordinatorLayout coordinatorLayout;
     private PokemonGridAdapter adapter;
     public static final String TAG = "POKEMON";
     private int offset = 0;
     private boolean canLoadData = true;
+    private Manager manager;
+
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.coordinator_layout)
+    CoordinatorLayout coordinatorLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +54,13 @@ public class MainActivity extends AppCompatActivity {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
         initRecyclerView();
-
-        retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.API_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        manager = Manager.getInstance();
 
         getPokemonData(offset);
     }
 
     private void getPokemonData(int offset) {
-        ApiService service = retrofit.create(ApiService.class);
+        ApiService service = manager.getRetrofit().create(ApiService.class);
         Call<PokemonAnswer> pokemonAnswerCall = service.getPokemonList(Constants.LOADING_VALUE, offset);
 
         pokemonAnswerCall.enqueue(new Callback<PokemonAnswer>() {
@@ -66,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<PokemonAnswer> call, Response<PokemonAnswer> response) {
                 canLoadData = true;
                 if (response.isSuccessful()) {
-
                     PokemonAnswer pokemonAnswer = response.body();
                     ArrayList<Pokemon> pokemonList = pokemonAnswer.getResults();
 
@@ -123,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view, int position) {
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra(Constants.INTENT_EXTRA_POKEMON, adapter.getPokemonFromPosition(position));
                 PokemonGridAdapter.ViewHolder holder = (PokemonGridAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-                Log.d(TAG, "" + holder.getPokemonName().getText());
-                startActivity(intent);
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(MainActivity.this, (View)holder.getPokemonImage(), Constants.TRANSITION_POKEMON_IMAGE);
+                startActivity(intent, options.toBundle());
             }
 
             @Override

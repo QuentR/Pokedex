@@ -24,13 +24,12 @@ import fr.quentinroussat.pokedex.util.Constants;
  * Created by Quentin on 20/02/2017.
  */
 
-public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.ViewHolder>  {
+public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.ViewHolder> {
 
     private ArrayList<Pokemon> dataset;
     private Context context;
 
-    public PokemonGridAdapter(Context context)
-    {
+    public PokemonGridAdapter(Context context) {
         this.context = context;
         dataset = new ArrayList<>();
     }
@@ -48,7 +47,9 @@ public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.
         holder.pokemonName.setAllCaps(true);
         holder.pokemonBackground.setText(pokemon.getFullNumberFromPokemonNumber(pokemon.getNumber()));
         String imageURL = String.format(Locale.FRANCE, Constants.API_IMAGE_BASE_URL, pokemon.getNumber());
-        Glide.with(context).load(imageURL).centerCrop().crossFade().listener(new RequestListener<String, GlideDrawable>() {
+
+        Glide.with(context).load(imageURL).centerCrop().crossFade().into(holder.pokemonImage);
+        /*Glide.with(context).load(imageURL).centerCrop().crossFade().listener(new RequestListener<String, GlideDrawable>() {
             @Override
             public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
                 return false;
@@ -59,16 +60,12 @@ public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.
                 holder.pokemonBackground.setVisibility(View.GONE);
                 return false;
             }
-        }).into(holder.pokemonImage);
+        }).into(holder.pokemonImage);*/
     }
 
-    public Pokemon getPokemonFromPosition(int position)
-    {
+    public Pokemon getPokemonFromPosition(int position) {
         return dataset.get(position);
     }
-
-
-
 
 
     @Override
@@ -81,13 +78,12 @@ public class PokemonGridAdapter extends RecyclerView.Adapter<PokemonGridAdapter.
         notifyDataSetChanged();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
-        private ImageView pokemonImage;
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView pokemonImage;
         private TextView pokemonName;
         private TextView pokemonBackground;
 
-        public ViewHolder(View itemView)
-        {
+        public ViewHolder(View itemView) {
             super(itemView);
             pokemonImage = (ImageView) itemView.findViewById(R.id.pokemon_image);
             pokemonName = (TextView) itemView.findViewById(R.id.pokemon_name);

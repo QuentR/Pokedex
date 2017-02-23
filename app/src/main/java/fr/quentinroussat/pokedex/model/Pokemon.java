@@ -2,11 +2,13 @@ package fr.quentinroussat.pokedex.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
+
 /**
  * Created by Quentin on 16/02/2017.
  */
 
-public class Pokemon {
+public class Pokemon implements Serializable {
 
     private int number;
     @SerializedName("name")
